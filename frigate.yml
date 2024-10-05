@@ -1,0 +1,88 @@
+
+# https://docs.frigate.video/configuration/reference/
+mqtt:
+  enabled: true
+  host: '172.16.0.90'
+#'{FRIGATE_MQTT_HOST}'
+  user: '{FRIGATE_MQTT_USER}'
+  password: '{FRIGATE_MQTT_PASSWORD}'
+
+# https://github.com/blakeblackshear/frigate/blob/v0.15.1/docker/main/rootfs/usr/local/go2rtc/create_config.py#L93-L110
+go2rtc:
+  streams:
+    # https://docs.frigate.video/frigate/camera_setup/#example-camera-configuration
+    # https://github.com/blakeblackshear/frigate/blob/v0.15.1/docker/main/rootfs/usr/local/go2rtc/create_config.py#L93
+    c200_main_stream:
+      # https://github.com/blakeblackshear/frigate/blob/v0.15.1/docker/main/rootfs/usr/local/go2rtc/create_config.py#L139-L161
+      - rtsp://{FRIGATE_RTSP_USER_C200}:{FRIGATE_RTSP_PASSWORD_C200}@{FRIGATE_RTSP_IP_C200}:554/stream1
+    c200_sub_stream:
+      - rtsp://{FRIGATE_RTSP_USER_C200}:{FRIGATE_RTSP_PASSWORD_C200}@{FRIGATE_RTSP_IP_C200}:554/stream2
+# https://github.com/blakeblackshear/frigate/blob/v0.15.1/docker/main/rootfs/usr/local/go2rtc/create_config.py#L69-L91
+#  webrtc:
+#    candidates:
+      # https://github.com/AlexxIT/go2rtc?tab=readme-ov-file#module-webrtc
+#      - stun:8555
+
+# https://docs.frigate.video/configuration/cameras/
+cameras:
+  tapoC200:
+    enabled: true
+    live:
+      stream_name: c200_sub_stream
+    ffmpeg:
+      output_args:
+        record: preset-record-generic-audio-aac
+# https://docs.frigate.video/configuration/hardware_acceleration
+# Linux Kernal of Ubuntu Server apparently doesn't support hardware acceleration yet: 2025-05-04 (Linux rasp-ubuntu 6.8.0-1020-raspi #24-Ubuntu SMP PREEMPT_DYNAMIC Sun Feb 23 08:39:32 UTC 2025 aarch64 aarch64 aarch64 GNU/Linux)
+#      hwaccel_args: preset-rpi-64-h264 # the implicit default may has the same effect - it might can be removed
+      inputs:
+        - path: rtsp://127.0.0.1:8554/c200_main_stream?video&audio
+          # https://docs.frigate.video/configuration/camera_specific/#rtmp-cameras
+          # https://github.com/blakeblackshear/frigate/blob/master/frigate/ffmpeg_presets.py
+          input_args: preset-rtsp-restream
+          # https://docs.frigate.video/configuration/cameras/
+          roles:
+            - record
+    # https://docs.frigate.video/configuration/cameras/#setting-up-camera-ptz-controls
+    onvif:
+      # In the current version, the host for onvif isn't read from env vars... see link below
+      # https://github.com/blakeblackshear/frigate/blob/v0.15.1/frigate/config/camera/onvif.py
+      host: 172.16.0.245 # identical to {FRIGATE_RTSP_IP_C200}
+      # 'Tapo: Many models supported, ONVIF Service Port: 2020'
+      # https://docs.frigate.video/configuration/cameras#onvif-ptz-camera-recommendations
+      port: 2020
+      user: '{FRIGATE_RTSP_USER_C200}'
+      password: '{FRIGATE_RTSP_PASSWORD_C200}'
+    # https://docs.frigate.video/configuration/record/
+
+record:
+  enabled: true
+  retain:
+    days: 1
+    mode: motion
+
+tls:
+  enabled: false
+
+detect:
+  enabled: false
+
+motion:
+  enabled: true
+  contour_area: 50
+  # https://docs.frigate.video/configuration/motion_detection#threshold
+  threshold: 200
+  frame_alpha: 0.02
+
+telemetry:
+  stats:
+    network_bandwidth: true
+
+# https://ffmpeg.org/ffmpeg-formats.html
+# [segment @ 0xaaaad1243060] Non-monotonous DTS in output stream 0:0; previous: 189555001, current: 199462; changing to 189555002. This may result in incorrect timestamps in the output file.
+ffmpeg:
+  global_args: -fflags +genpts -use_wallclock_as_timestamps 1
+
+# https://docs.frigate.video/configuration/birdseye
+birdseye:
+  mode: motion
