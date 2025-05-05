@@ -42,14 +42,12 @@ services:
       - FRIGATE_RTSP_USER_C200=/run/secrets/FRIGATE_RTSP_USER_C200
       - FRIGATE_RTSP_PASSWORD_C200=/run/secrets/FRIGATE_PASSWORD_C200
       - FRIGATE_RTSP_IP_C200=/run/secrets/FRIGATE_IP_C200
-      - FRIGATE_RTSP_MQTT_HOST=/run/secrets/FRIGATE_MQTT_HOST
       - FRIGATE_MQTT_USER=/run/secrets/FRIGATE_MQTT_USER
       - FRIGATE_MQTT_PASSWORD=/run/secrets/FRIGATE_MQTT_PASSWORD
     secrets:
       - FRIGATE_RTSP_USER_C200
       - FRIGATE_RTSP_PASSWORD_C200
       - FRIGATE_RTSP_IP_C200
-      - FRIGATE_MQTT_HOST
       - FRIGATE_MQTT_USER
       - FRIGATE_MQTT_PASSWORD
 
@@ -58,17 +56,15 @@ networks:
 
 secrets:
   FRIGATE_RTSP_USER_C200:
-    file: ~/frigate-secrets/c200-user.secret
+    file: ${SECRETS_DIR:-}c200-user.secret
   FRIGATE_RTSP_PASSWORD_C200:
-    file: ~/frigate-secrets/c200-pw.secret
+    file: ${SECRETS_DIR:-}c200-pw.secret
   FRIGATE_RTSP_IP_C200:
-    file: ~/frigate-secrets/c200-host.secret
-  FRIGATE_MQTT_HOST:
-    file: ~/frigate-secrets/mqtt-host.secret
+    file: ${SECRETS_DIR:-}c200-host.secret
   FRIGATE_MQTT_USER:
-    file: ~/frigate-secrets/mqtt-user.secret
+    file: ${SECRETS_DIR:-}mqtt-user.secret
   FRIGATE_MQTT_PASSWORD:
-    file: ~/frigate-secrets/mqtt-pw.secret
+    file: ${SECRETS_DIR:-}mqtt-pw.secret
 
 volumes:
   frigate-config:

@@ -3,7 +3,6 @@
 mqtt:
   enabled: true
   host: '172.16.0.90'
-#'{FRIGATE_MQTT_HOST}'
   user: '{FRIGATE_MQTT_USER}'
   password: '{FRIGATE_MQTT_PASSWORD}'
 
